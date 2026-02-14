@@ -1,88 +1,100 @@
 buildingViewFrame = game.player.gui.screen.add
 {
-   type = "frame",
-   name = "building_view_frame",
-   direction = "vertical"
+    type = "frame",
+    name = "building_view_frame",
+    direction = "vertical"
 }
-local titlebar = buildingViewFrame.add
+local buildingViewTitlebar = buildingViewFrame.add
 {
-   type = "flow"
+    type = "flow"
 }
-titlebar.drag_target = buildingViewFrame titlebar.add
+buildingViewTitlebar.drag_target = buildingViewFrame
+buildingViewTitlebar.add
 {
-   type = "label",
-   style = "frame_title",
-   caption = "Building View",
-   ignored_by_interaction = true,
+    type = "label",
+    style = "frame_title",
+    caption = "Building View",
+    ignored_by_interaction = true,
 }
-local filler = titlebar.add
+local bldgViewTitleDrag = buildingViewTitlebar.add
 {
-   type = "empty-widget",
-   style = "draggable_space",
-   ignored_by_interaction = true,
+    type = "empty-widget",
+    style = "draggable_space",
+    ignored_by_interaction = true,
 }
-filler.style.height = 24
-filler.style.horizontally_stretchable = true
-titlebar.add
+bldgViewTitleDrag.style.height = 24
+bldgViewTitleDrag.style.horizontally_stretchable = true
+buildingViewTitlebar.add
 {
-   type = "sprite-button",
-   name = "the-x-button",
-   style = "frame_action_button",
-   sprite = "utility/close",
-   hovered_sprite = "utility/close_black",
-   clicked_sprite = "utility/close_black",
-   tooltip = "gui.close-instruction"
+    type = "sprite-button",
+    name = "building-view-x-button",
+    style = "frame_action_button",
+    sprite = "utility/close",
+    hovered_sprite = "utility/close_black",
+    clicked_sprite = "utility/close_black",
+    tooltip = "gui.close-instruction"
 }
 
 
-game.player.opened = buildingViewFrame script.on_event
-{
-   defines.events.on_gui_click,
-   function(event)
-       if event.element.name == "the-x-button"
-       then event.element.parent.parent.destroy()
-       end
-   end
-}
+game.player.opened = buildingViewFrame
 script.on_event
-{
-   defines.events.on_gui_closed,
-   function(event)
-       if event.element and event.element.valid and event.element.name == "building_view_frame"
-       then event.element.destroy()
-       end
-   end
-}
+(
+    defines.events.on_gui_click,
+    function(event)
+        if event.element.name == "building-view-x-button"
+        then
+            event.element.parent.parent.destroy()
+        end
+    end
+)
+script.on_event
+(
+    defines.events.on_gui_closed,
+    function(event)
+        if event.element and event.element.valid and event.element.name == "building_view_frame"
+        then
+            event.element.destroy()
+        end
+    end
+)
 
 local camera_width_thin = 500
 local camera_width_fs = game.player.display_resolution.width - 15
-local building_index_ = game.surfaces["fulgora-factory-floor"].index
-function make_building_view(top_floor, bottom_floor, camera_width)
-  local line_index = 1
-  local total_num_cams = top_floor - (bottom_floor - 1)
-  for i = top_floor, bottom_floor, -1 do
-   local x = i * 512
-   local cam_name = "floor_"..i.."_cam"
-   local cam_name = buildingViewFrame.add
-   {
-     type = "camera",
-     name = cam_name.."_element",
-     position = {x,0},
-     surface_index = building_index,
-     zoom = 1
-   }
-   name.style.minimal_width = camera_width
-   name.style.minimal_height = (game.player.display_resolution.height / total_num_cams) - 37
-   for j = line_index, 3 do
-     local line_name = "line_"..j
-     local line_name = buildingViewFrame.add
-     {
-       type = "line", 
-       name = line_name.."_element"
-     }
-     line_index = line_index + 1
-   end
-  end
+local building_index = game.surfaces["fulgora-factory-floor"].index
+function make_building_view(top_floor, bottom_floor, full_screen_bool)
+    full_screen_bool = full_screen_bool or false
+    if full_screen_bool
+    then
+        camera_width = camera_width_fs
+    else
+        camera_width = camera_width_thin
+    end
+    local total_num_cams = top_floor - (bottom_floor - 1)
+    for i = top_floor, bottom_floor, -1 do
+        local x = i * 512
+        local cam_name = "floor_" .. i .. "_cam"
+        local cam_name = buildingViewFrame.add
+        {
+            type = "camera",
+            name = cam_name .. "_element",
+            position = { x, 0 },
+            surface_index = building_index,
+            zoom = 1
+        }
+        cam_name.style.minimal_width = camera_width
+        cam_name.style.minimal_height = (game.player.display_resolution.height / total_num_cams) - ((37 / 2) * math.log(total_num_cams))
+        if i  ~= bottom_floor
+        then
+            for j = 1, 3 do
+                local line_name = "line_"..i.."_"..j
+                local line_name = buildingViewFrame.add
+                {
+                    type = "line",
+                    name = line_name .. "_element"
+                }
+            end
+        end
+    end
 end
 
-make_building_view(5, 1, camera_width_fs)
+make_building_view(5, 1, true)
