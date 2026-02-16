@@ -1,0 +1,9 @@
+{
+  "name": "Vertorio",
+  "version": "0.1.0",
+  "title": "Vertorio",
+  "description": "Vertical machine interface",
+  "author": "ann r key",
+  "homepage": "github.com/any-key/Vertorio"
+  "dependencies": ["factorissimo-2-notnotmelon"]
+}
